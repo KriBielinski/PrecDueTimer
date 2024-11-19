@@ -153,7 +153,7 @@ uint8_t DueTimer::bestClock(double frequency, uint32_t& retRC){
 		TIMER_CLOCK3	MCK / 32
 		TIMER_CLOCK4	MCK /128
 	*/
-	const struct {
+	/*const struct {
 		uint8_t flag;
 		uint8_t divisor;
 	} clockConfig[] = {
@@ -177,10 +177,10 @@ uint8_t DueTimer::bestClock(double frequency, uint32_t& retRC){
 			bestClock = clkId;
 			bestError = error;
 		}
-	} while (clkId-- > 0);
-	ticks = (float) SystemCoreClock / frequency / (float) clockConfig[bestClock].divisor;
+	} while (clkId-- > 0);*/
+	float ticks = (float) SystemCoreClock / frequency / 2.0; // 2.0 because we choose Clock1
 	retRC = (uint32_t) round(ticks);
-	return clockConfig[bestClock].flag;
+	return TC_CMR_TCCLKS_TIMER_CLOCK1;
 }
 
 
@@ -215,7 +215,7 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	  case TC_CMR_TCCLKS_TIMER_CLOCK1:
 	    _frequency[timer] = (double)SystemCoreClock / 2.0 / (double)rc;
 	    break;
-	  case TC_CMR_TCCLKS_TIMER_CLOCK2:
+	  /*case TC_CMR_TCCLKS_TIMER_CLOCK2:
 	    _frequency[timer] = (double)SystemCoreClock / 8.0 / (double)rc;
 	    break;
 	  case TC_CMR_TCCLKS_TIMER_CLOCK3:
@@ -223,7 +223,7 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	    break;
 	  default: // TC_CMR_TCCLKS_TIMER_CLOCK4
 	    _frequency[timer] = (double)SystemCoreClock / 128.0 / (double)rc;
-	    break;
+	    break;*/
 	}
 
 	// Set up the Timer in waveform mode which creates a PWM

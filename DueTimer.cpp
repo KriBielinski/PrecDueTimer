@@ -111,7 +111,7 @@ DueTimer& DueTimer::detachInterrupt(void){
 	return *this;
 }
 
-DueTimer& DueTimer::start(double microseconds){
+DueTimer& DueTimer::start(uint32_t microseconds){
 	/*
 		Start the timer
 		If a period is set, then sets the period and start the timer
@@ -119,9 +119,12 @@ DueTimer& DueTimer::start(double microseconds){
 
 	if(microseconds > 0)
 		setPeriod(microseconds);
+  else
+    setPeriod(1000000);
 	
-	if(_frequency[timer] <= 0)
-		setFrequency(1);
+	//if(_frequency[timer] <= 0)
+		//setFrequency(1);
+    //setPeriod(1000000);
 
 	NVIC_ClearPendingIRQ(Timers[timer].irq);
 	NVIC_EnableIRQ(Timers[timer].irq);
@@ -199,7 +202,7 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	Timer t = Timers[timer];
 
 	uint32_t rc = 0;
-	uint8_t clock;
+	uint8_t clock = TC_CMR_TCCLKS_TIMER_CLOCK1;
 
 	// Tell the Power Management Controller to disable 
 	// the write protection of the (Timer/Counter) registers:
@@ -209,13 +212,13 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	pmc_enable_periph_clk((uint32_t)t.irq);
 
 	// Find the best clock for the wanted frequency
-	clock = bestClock(frequency, rc);
+	/*clock = bestClock(frequency, rc);
 
 	switch (clock) {
 	  case TC_CMR_TCCLKS_TIMER_CLOCK1:
 	    _frequency[timer] = (double)SystemCoreClock / 2.0 / (double)rc;
 	    break;
-	  /*case TC_CMR_TCCLKS_TIMER_CLOCK2:
+	  case TC_CMR_TCCLKS_TIMER_CLOCK2:
 	    _frequency[timer] = (double)SystemCoreClock / 8.0 / (double)rc;
 	    break;
 	  case TC_CMR_TCCLKS_TIMER_CLOCK3:
@@ -223,8 +226,11 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	    break;
 	  default: // TC_CMR_TCCLKS_TIMER_CLOCK4
 	    _frequency[timer] = (double)SystemCoreClock / 128.0 / (double)rc;
-	    break;*/
-	}
+	    break;
+	}*/
+
+  _frequency[timer] = frequency;
+  rc = (uint32_t) round((float)SystemCoreClock / frequency / 2.0);
 
 	// Set up the Timer in waveform mode which creates a PWM
 	// in UP mode with automatic trigger on RC Compare
@@ -240,14 +246,40 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	return *this;
 }
 
-DueTimer& DueTimer::setPeriod(double microseconds){
+DueTimer& DueTimer::setPeriod(uint32_t microseconds){
 	/*
 		Set the period of the timer (in microseconds)
 	*/
 
+  // Get current timer configuration
+	Timer t = Timers[timer];
+	uint32_t rc = 0;
+  uint8_t clock = TC_CMR_TCCLKS_TIMER_CLOCK1;
+
+  // Tell the Power Management Controller to disable 
+	// the write protection of the (Timer/Counter) registers:
+	pmc_set_writeprotect(false);
+
+	// Enable clock for the timer
+	pmc_enable_periph_clk((uint32_t)t.irq);
+
 	// Convert period in microseconds to frequency in Hz
-	double frequency = 1000000.0 / microseconds;	
-	setFrequency(frequency);
+	//double frequency = 1000000.0 / microseconds;
+
+  //_frequency[timer] = frequency;
+  rc = 42*microseconds;
+
+  // Set up the Timer in waveform mode which creates a PWM
+	// in UP mode with automatic trigger on RC Compare
+	// and sets it up with the determined internal clock as clock input.
+	TC_Configure(t.tc, t.channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | clock);
+	// Reset counter and fire interrupt when RC value is matched:
+	TC_SetRC(t.tc, t.channel, rc);
+	// Enable the RC Compare Interrupt...
+	t.tc->TC_CHANNEL[t.channel].TC_IER=TC_IER_CPCS;
+	// ... and disable all others.
+	t.tc->TC_CHANNEL[t.channel].TC_IDR=~TC_IER_CPCS;
+
 	return *this;
 }
 

@@ -83,10 +83,10 @@ public:
 	DueTimer(unsigned short _timer);
 	DueTimer& attachInterrupt(void (*isr)());
 	DueTimer& detachInterrupt(void);
-	DueTimer& start(double microseconds = -1);
+	DueTimer& start(uint32_t microseconds = 0);
 	DueTimer& stop(void);
 	DueTimer& setFrequency(double frequency);
-	DueTimer& setPeriod(double microseconds);
+	DueTimer& setPeriod(uint32_t microseconds);
 
 	double getFrequency(void) const;
 	double getPeriod(void) const;

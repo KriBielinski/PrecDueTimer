@@ -45,9 +45,9 @@ const DueTimer::Timer DueTimer::Timers[NUM_TIMERS] = {
 #endif
 		
 #if NUM_TIMERS > 6
-double DueTimer::_frequency[NUM_TIMERS] = {-1,-1,-1,-1,-1,-1,-1,-1,-1};
+uint32_t DueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0,0,0,0};
 #else
-double DueTimer::_frequency[NUM_TIMERS] = {-1,-1,-1,-1,-1,-1};
+uint32_t DueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0};
 #endif
 
 /*
@@ -119,12 +119,9 @@ DueTimer& DueTimer::start(uint32_t microseconds){
 
 	if(microseconds > 0)
 		setPeriod(microseconds);
-  else
-    setPeriod(1000000);
 	
-	//if(_frequency[timer] <= 0)
-		//setFrequency(1);
-    //setPeriod(1000000);
+	if(_period[timer] <= 0)
+    setPeriod(1000000);
 
 	NVIC_ClearPendingIRQ(Timers[timer].irq);
 	NVIC_EnableIRQ(Timers[timer].irq);
@@ -156,7 +153,7 @@ uint8_t DueTimer::bestClock(double frequency, uint32_t& retRC){
 		TIMER_CLOCK3	MCK / 32
 		TIMER_CLOCK4	MCK /128
 	*/
-	/*const struct {
+	const struct {
 		uint8_t flag;
 		uint8_t divisor;
 	} clockConfig[] = {
@@ -180,10 +177,10 @@ uint8_t DueTimer::bestClock(double frequency, uint32_t& retRC){
 			bestClock = clkId;
 			bestError = error;
 		}
-	} while (clkId-- > 0);*/
-	float ticks = (float) SystemCoreClock / frequency / 2.0; // 2.0 because we choose Clock1
+	} while (clkId-- > 0);
+	ticks = (float) SystemCoreClock / frequency / (float) clockConfig[bestClock].divisor;
 	retRC = (uint32_t) round(ticks);
-	return TC_CMR_TCCLKS_TIMER_CLOCK1;
+	return clockConfig[bestClock].flag;
 }
 
 
@@ -195,53 +192,10 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	// Prevent negative frequencies
 	if(frequency <= 0) { frequency = 1; }
 
-	// Remember the frequency — see below how the exact frequency is reported instead
-	//_frequency[timer] = frequency;
+  // Convert frequency in Hz to period in microseconds
+	uint32_t period = (uint32_t) round(1000000.0 / frequency);
 
-	// Get current timer configuration
-	Timer t = Timers[timer];
-
-	uint32_t rc = 0;
-	uint8_t clock = TC_CMR_TCCLKS_TIMER_CLOCK1;
-
-	// Tell the Power Management Controller to disable 
-	// the write protection of the (Timer/Counter) registers:
-	pmc_set_writeprotect(false);
-
-	// Enable clock for the timer
-	pmc_enable_periph_clk((uint32_t)t.irq);
-
-	// Find the best clock for the wanted frequency
-	/*clock = bestClock(frequency, rc);
-
-	switch (clock) {
-	  case TC_CMR_TCCLKS_TIMER_CLOCK1:
-	    _frequency[timer] = (double)SystemCoreClock / 2.0 / (double)rc;
-	    break;
-	  case TC_CMR_TCCLKS_TIMER_CLOCK2:
-	    _frequency[timer] = (double)SystemCoreClock / 8.0 / (double)rc;
-	    break;
-	  case TC_CMR_TCCLKS_TIMER_CLOCK3:
-	    _frequency[timer] = (double)SystemCoreClock / 32.0 / (double)rc;
-	    break;
-	  default: // TC_CMR_TCCLKS_TIMER_CLOCK4
-	    _frequency[timer] = (double)SystemCoreClock / 128.0 / (double)rc;
-	    break;
-	}*/
-
-  _frequency[timer] = frequency;
-  rc = (uint32_t) round((float)SystemCoreClock / frequency / 2.0);
-
-	// Set up the Timer in waveform mode which creates a PWM
-	// in UP mode with automatic trigger on RC Compare
-	// and sets it up with the determined internal clock as clock input.
-	TC_Configure(t.tc, t.channel, TC_CMR_WAVE | TC_CMR_WAVSEL_UP_RC | clock);
-	// Reset counter and fire interrupt when RC value is matched:
-	TC_SetRC(t.tc, t.channel, rc);
-	// Enable the RC Compare Interrupt...
-	t.tc->TC_CHANNEL[t.channel].TC_IER=TC_IER_CPCS;
-	// ... and disable all others.
-	t.tc->TC_CHANNEL[t.channel].TC_IDR=~TC_IER_CPCS;
+  setPeriod(period);
 
 	return *this;
 }
@@ -266,7 +220,7 @@ DueTimer& DueTimer::setPeriod(uint32_t microseconds){
 	// Convert period in microseconds to frequency in Hz
 	//double frequency = 1000000.0 / microseconds;
 
-  //_frequency[timer] = frequency;
+  _period[timer] = microseconds;
   rc = 42*microseconds;
 
   // Set up the Timer in waveform mode which creates a PWM
@@ -288,7 +242,7 @@ double DueTimer::getFrequency(void) const {
 		Get current time frequency
 	*/
 
-	return _frequency[timer];
+	return 1.0/getPeriod()*1000000;
 }
 
 double DueTimer::getPeriod(void) const {
@@ -296,7 +250,7 @@ double DueTimer::getPeriod(void) const {
 		Get current time period
 	*/
 
-	return 1.0/getFrequency()*1000000;
+  return _period[timer];
 }
 
 

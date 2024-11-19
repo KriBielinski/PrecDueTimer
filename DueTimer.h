@@ -44,9 +44,9 @@ protected:
 	// Represents the timer id (index for the array of Timer structs)
 	const unsigned short timer;
 
-	// Stores the object timer frequency
+	// Stores the object timer period
 	// (allows to access current timer period and frequency):
-	static double _frequency[NUM_TIMERS];
+	static uint32_t _period[NUM_TIMERS];
 
 	// Picks the best clock to lower the error
 	static uint8_t bestClock(double frequency, uint32_t& retRC);

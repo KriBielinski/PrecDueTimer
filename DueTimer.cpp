@@ -244,7 +244,7 @@ double DueTimer::getFrequency(void) const {
 	return 1.0/getPeriod()*1000000;
 }
 
-double DueTimer::getPeriod(void) const {
+uint32_t DueTimer::getPeriod(void) const {
 	/*
 		Get current time period
 	*/

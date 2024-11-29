@@ -89,7 +89,7 @@ public:
 	DueTimer& setPeriod(uint32_t microseconds);
 
 	double getFrequency(void) const;
-	double getPeriod(void) const;
+	uint32_t getPeriod(void) const;
 
   inline __attribute__((always_inline)) bool operator== (const DueTimer& rhs) const
     {return timer == rhs.timer; };

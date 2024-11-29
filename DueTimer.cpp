@@ -217,11 +217,10 @@ DueTimer& DueTimer::setPeriod(uint32_t microseconds){
 	// Enable clock for the timer
 	pmc_enable_periph_clk((uint32_t)t.irq);
 
-	// Convert period in microseconds to frequency in Hz
-	//double frequency = 1000000.0 / microseconds;
-
   _period[timer] = microseconds;
-  rc = 42*microseconds;
+  
+  // 84 because of Due's 84 MHz clock, 2 because of the clock's divisor
+  rc = (84/2)*microseconds;
 
   // Set up the Timer in waveform mode which creates a PWM
 	// in UP mode with automatic trigger on RC Compare

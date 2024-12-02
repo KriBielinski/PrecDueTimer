@@ -1,16 +1,21 @@
 /*
-  DueTimer.cpp - Implementation of Timers defined on DueTimer.h
-  For instructions, go to https://github.com/ivanseidel/DueTimer
+  PrecDueTimer.cpp - Implementation of Timers defined on PrecDueTimer.h
 
+  Original DueTimer library:
   Created by Ivan Seidel Gomes, March, 2013.
   Modified by Philipp Klaus, June 2013.
   Thanks to stimmer (from Arduino forum), for coding the "timer soul" (Register stuff)
-  Released into the public domain.
+  
+  PrecDueTimer library:
+  Copyright (C) 2024 Krzysztof Bieliński
+  
+  Licensed under MIT license. For instructions and additional information go to
+  https://github.com/KriBielinski/PrecDueTimer
 */
 
-#include "DueTimer.h"
+#include "PrecDueTimer.h"
 
-const DueTimer::Timer DueTimer::Timers[NUM_TIMERS] = {
+const PrecDueTimer::Timer PrecDueTimer::Timers[NUM_TIMERS] = {
 	{TC0,0,TC0_IRQn},
 	{TC0,1,TC1_IRQn},
 	{TC0,2,TC2_IRQn},
@@ -41,11 +46,11 @@ const DueTimer::Timer DueTimer::Timers[NUM_TIMERS] = {
 #endif
 	};
 #else
-	void (*DueTimer::callbacks[NUM_TIMERS])() = {};
+	void (*PrecDueTimer::callbacks[NUM_TIMERS])() = {};
 #endif
 		
 #if NUM_TIMERS > 6
-uint32_t DueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0,0,0,0};
+uint32_t PrecDueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0,0,0,0};
 #else
 uint32_t DueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0};
 #endif
@@ -53,43 +58,43 @@ uint32_t DueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0};
 /*
 	Initializing all timers, so you can use them like this: Timer0.start();
 */
-DueTimer Timer(0);
+PrecDueTimer Timer(0);
 
-DueTimer Timer1(1);
+PrecDueTimer Timer1(1);
 // Fix for compatibility with Servo library
 #ifndef USING_SERVO_LIB
-	DueTimer Timer0(0);
-	DueTimer Timer2(2);
-	DueTimer Timer3(3);
-	DueTimer Timer4(4);
-	DueTimer Timer5(5);
+	PrecDueTimer Timer0(0);
+	PrecDueTimer Timer2(2);
+	PrecDueTimer Timer3(3);
+	PrecDueTimer Timer4(4);
+	PrecDueTimer Timer5(5);
 #endif
 #if NUM_TIMERS > 6
-DueTimer Timer6(6);
-DueTimer Timer7(7);
-DueTimer Timer8(8);
+PrecDueTimer Timer6(6);
+PrecDueTimer Timer7(7);
+PrecDueTimer Timer8(8);
 #endif
 
-DueTimer::DueTimer(unsigned short _timer) : timer(_timer){
+PrecDueTimer::PrecDueTimer(unsigned short _timer) : timer(_timer){
 	/*
 		The constructor of the class DueTimer 
 	*/
 }
 
-DueTimer DueTimer::getAvailable(void){
+PrecDueTimer PrecDueTimer::getAvailable(void){
 	/*
 		Return the first timer with no callback set
 	*/
 
 	for(int i = 0; i < NUM_TIMERS; i++){
 		if(!callbacks[i])
-			return DueTimer(i);
+			return PrecDueTimer(i);
 	}
 	// Default, return Timer0;
-	return DueTimer(0);
+	return PrecDueTimer(0);
 }
 
-DueTimer& DueTimer::attachInterrupt(void (*isr)()){
+PrecDueTimer& PrecDueTimer::attachInterrupt(void (*isr)()){
 	/*
 		Links the function passed as argument to the timer of the object
 	*/
@@ -99,7 +104,7 @@ DueTimer& DueTimer::attachInterrupt(void (*isr)()){
 	return *this;
 }
 
-DueTimer& DueTimer::detachInterrupt(void){
+PrecDueTimer& PrecDueTimer::detachInterrupt(void){
 	/*
 		Links the function passed as argument to the timer of the object
 	*/
@@ -111,7 +116,7 @@ DueTimer& DueTimer::detachInterrupt(void){
 	return *this;
 }
 
-DueTimer& DueTimer::start(uint32_t microseconds){
+PrecDueTimer& PrecDueTimer::start(uint32_t microseconds){
 	/*
 		Start the timer
 		If a period is set, then sets the period and start the timer
@@ -131,7 +136,7 @@ DueTimer& DueTimer::start(uint32_t microseconds){
 	return *this;
 }
 
-DueTimer& DueTimer::stop(void){
+PrecDueTimer& PrecDueTimer::stop(void){
 	/*
 		Stop the timer
 	*/
@@ -143,7 +148,7 @@ DueTimer& DueTimer::stop(void){
 	return *this;
 }
 
-uint8_t DueTimer::bestClock(double frequency, uint32_t& retRC){
+uint8_t PrecDueTimer::bestClock(double frequency, uint32_t& retRC){
 	/*
 		Pick the best Clock, thanks to Ogle Basil Hall!
 
@@ -184,7 +189,7 @@ uint8_t DueTimer::bestClock(double frequency, uint32_t& retRC){
 }
 
 
-DueTimer& DueTimer::setFrequency(double frequency){
+PrecDueTimer& PrecDueTimer::setFrequency(double frequency){
 	/*
 		Set the timer frequency (in Hz)
 	*/
@@ -200,7 +205,7 @@ DueTimer& DueTimer::setFrequency(double frequency){
 	return *this;
 }
 
-DueTimer& DueTimer::setPeriod(uint32_t microseconds){
+PrecDueTimer& PrecDueTimer::setPeriod(uint32_t microseconds){
 	/*
 		Set the period of the timer (in microseconds)
 	*/
@@ -236,7 +241,7 @@ DueTimer& DueTimer::setPeriod(uint32_t microseconds){
 	return *this;
 }
 
-double DueTimer::getFrequency(void) const {
+double PrecDueTimer::getFrequency(void) const {
 	/*
 		Get current time frequency
 	*/
@@ -244,7 +249,7 @@ double DueTimer::getFrequency(void) const {
 	return 1.0/getPeriod()*1000000;
 }
 
-uint32_t DueTimer::getPeriod(void) const {
+uint32_t PrecDueTimer::getPeriod(void) const {
 	/*
 		Get current time period
 	*/
@@ -261,43 +266,43 @@ uint32_t DueTimer::getPeriod(void) const {
 #ifndef USING_SERVO_LIB
 void TC0_Handler(void){
 	TC_GetStatus(TC0, 0);
-	DueTimer::callbacks[0]();
+	PrecDueTimer::callbacks[0]();
 }
 #endif
 void TC1_Handler(void){
 	TC_GetStatus(TC0, 1);
-	DueTimer::callbacks[1]();
+	PrecDueTimer::callbacks[1]();
 }
 // Fix for compatibility with Servo library
 #ifndef USING_SERVO_LIB
 void TC2_Handler(void){
 	TC_GetStatus(TC0, 2);
-	DueTimer::callbacks[2]();
+	PrecDueTimer::callbacks[2]();
 }
 void TC3_Handler(void){
 	TC_GetStatus(TC1, 0);
-	DueTimer::callbacks[3]();
+	PrecDueTimer::callbacks[3]();
 }
 void TC4_Handler(void){
 	TC_GetStatus(TC1, 1);
-	DueTimer::callbacks[4]();
+	PrecDueTimer::callbacks[4]();
 }
 void TC5_Handler(void){
 	TC_GetStatus(TC1, 2);
-	DueTimer::callbacks[5]();
+	PrecDueTimer::callbacks[5]();
 }
 #endif
 #if NUM_TIMERS > 6
 void TC6_Handler(void){
 	TC_GetStatus(TC2, 0);
-	DueTimer::callbacks[6]();
+	PrecDueTimer::callbacks[6]();
 }
 void TC7_Handler(void){
 	TC_GetStatus(TC2, 1);
-	DueTimer::callbacks[7]();
+	PrecDueTimer::callbacks[7]();
 }
 void TC8_Handler(void){
 	TC_GetStatus(TC2, 2);
-	DueTimer::callbacks[8]();
+	PrecDueTimer::callbacks[8]();
 }
 #endif

@@ -1,18 +1,23 @@
 /*
-  DueTimer.h - DueTimer header file, definition of methods and attributes...
-  For instructions, go to https://github.com/ivanseidel/DueTimer
+  PrecDueTimer.h - PrecDueTimer header file, definition of methods and attributes...
 
+  Original DueTimer library:
   Created by Ivan Seidel Gomes, March, 2013.
   Modified by Philipp Klaus, June 2013.
-  Released into the public domain.
+  
+  PrecDueTimer library:
+  Copyright (C) 2024 Krzysztof Bieliński
+  
+  Licensed under MIT license. For instructions and additional information go to
+  https://github.com/KriBielinski/PrecDueTimer
 */
 
 #include "Arduino.h"
 
 #if defined(_SAM3XA_)
 
-#ifndef DueTimer_h
-#define DueTimer_h
+#ifndef PrecDueTimer_h
+#define PrecDueTimer_h
 
 #include <inttypes.h>
 
@@ -37,7 +42,7 @@
 #define NUM_TIMERS  6
 #endif
 
-class DueTimer
+class PrecDueTimer
 {
 protected:
 
@@ -78,41 +83,41 @@ protected:
 
 public:
 
-	static DueTimer getAvailable(void);
+	static PrecDueTimer getAvailable(void);
 
-	DueTimer(unsigned short _timer);
-	DueTimer& attachInterrupt(void (*isr)());
-	DueTimer& detachInterrupt(void);
-	DueTimer& start(uint32_t microseconds = 0);
-	DueTimer& stop(void);
-	DueTimer& setFrequency(double frequency);
-	DueTimer& setPeriod(uint32_t microseconds);
+	PrecDueTimer(unsigned short _timer);
+	PrecDueTimer& attachInterrupt(void (*isr)());
+	PrecDueTimer& detachInterrupt(void);
+	PrecDueTimer& start(uint32_t microseconds = 0);
+	PrecDueTimer& stop(void);
+	PrecDueTimer& setFrequency(double frequency);
+	PrecDueTimer& setPeriod(uint32_t microseconds);
 
 	double getFrequency(void) const;
 	uint32_t getPeriod(void) const;
 
-  inline __attribute__((always_inline)) bool operator== (const DueTimer& rhs) const
+  inline __attribute__((always_inline)) bool operator== (const PrecDueTimer& rhs) const
     {return timer == rhs.timer; };
-  inline __attribute__((always_inline)) bool operator!= (const DueTimer& rhs) const
+  inline __attribute__((always_inline)) bool operator!= (const PrecDueTimer& rhs) const
     {return timer != rhs.timer; };
 };
 
 // Just to call Timer.getAvailable instead of Timer::getAvailable() :
-extern DueTimer Timer;
+extern PrecDueTimer Timer;
 
-extern DueTimer Timer1;
+extern PrecDueTimer Timer1;
 // Fix for compatibility with Servo library
 #ifndef USING_SERVO_LIB
-	extern DueTimer Timer0;
-	extern DueTimer Timer2;
-	extern DueTimer Timer3;
-	extern DueTimer Timer4;
-	extern DueTimer Timer5;
+	extern PrecDueTimer Timer0;
+	extern PrecDueTimer Timer2;
+	extern PrecDueTimer Timer3;
+	extern PrecDueTimer Timer4;
+	extern PrecDueTimer Timer5;
 #endif
 #if NUM_TIMERS > 6
-extern DueTimer Timer6;
-extern DueTimer Timer7;
-extern DueTimer Timer8;
+extern PrecDueTimer Timer6;
+extern PrecDueTimer Timer7;
+extern PrecDueTimer Timer8;
 #endif
 
 #endif

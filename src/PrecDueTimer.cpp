@@ -32,7 +32,7 @@ const PrecDueTimer::Timer PrecDueTimer::Timers[NUM_TIMERS] = {
 // Fix for compatibility with Servo library
 #ifdef USING_SERVO_LIB
 	// Set callbacks as used, allowing DueTimer::getAvailable() to work
-	void (*DueTimer::callbacks[NUM_TIMERS])() = {
+	void (*PrecDueTimer::callbacks[NUM_TIMERS])() = {
 		(void (*)()) 1, // Timer 0 - Occupied
 		(void (*)()) 0, // Timer 1
 		(void (*)()) 1, // Timer 2 - Occupied
@@ -52,7 +52,7 @@ const PrecDueTimer::Timer PrecDueTimer::Timers[NUM_TIMERS] = {
 #if NUM_TIMERS > 6
 uint32_t PrecDueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0,0,0,0};
 #else
-uint32_t DueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0};
+uint32_t PrecDueTimer::_period[NUM_TIMERS] = {0,0,0,0,0,0};
 #endif
 
 /*
